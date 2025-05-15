@@ -14,6 +14,7 @@ Predict the market price of crops based on environmental and agricultural inputs
 git clone https://github.com/your-username/crop-price-predictor.git
 cd crop-price-predictor
 
+```
 
 ## ⚙️ Tech Stack
 
@@ -70,7 +71,7 @@ python -m venv venv               # Create virtual environment
 source venv/bin/activate          # On Windows: venv\Scripts\activate
 pip install -r requirements.txt   # Install Python dependencies
 python app.py                     # Run Flask server
-
+```
 
 
 ###  By default, the server will start at:
@@ -80,6 +81,8 @@ http://localhost:5000
 
 ### 🔧 Backend Setup (ReactJS)
 
+```bash
 cd frontend
 npm install                       # Install Node.js dependencies
 npm run dev                       # Start development server
+```
