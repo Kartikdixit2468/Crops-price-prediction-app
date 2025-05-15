@@ -78,7 +78,7 @@ http://localhost:5000
 
 
 
-### 🔧 Backend Setup (ReactJS)
+### 🔧 Frontend Setup (ReactJS)
 
 ```bash
 cd frontend
