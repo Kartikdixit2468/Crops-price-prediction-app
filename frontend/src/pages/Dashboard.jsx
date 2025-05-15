@@ -5,25 +5,25 @@ import Header from "../components/Header";
 
 function Dashboard() {
   const [formData, setFormData] = useState({
-    cropName: "",
+    crop_name: "",
     region: "",
     year: "",
     month: "",
-    marketPrice: "",
     rainfall: "",
-    variety: "",
-    areaSown: "",
+    crop_variety: "",
+    area_sown: "",
     yield: "",
-    irrigated: "",
-    fertilizer: "",
-    msp: "",
-    marketDemand: "",
-    exportDemand: "",
-    inputCost: "",
-    transportCost: "",
-    govtScheme: "",
-    coldStorage: "",
-    mandiOpen: "",
+    irrigated_percent: "",
+    fertilizer_used: "",
+    msP: "",
+    market_demand: "",
+    export_demand: "",
+    input_cost: "",
+    transport_cost: "",
+    govt_scheme_active: "",
+    cold_storage_available: "",
+    mandi_open: "",
+    modelChoice: "xgboost",
   });
 
   const [predictedPrice, setPredictedPrice] = useState(null);
@@ -39,77 +39,74 @@ function Dashboard() {
     }));
   };
 
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const data = {
-      cropName,
-      region,
-      year,
-      month,
-      marketPrice,
-      rainfall,
-      cropVariety,
-      areaSown,
-      yieldVal,
-      irrigatedPercent,
-      fertilizerUsed,
-      mspAvailable,
-      marketDemand,
-      exportDemand,
-      inputCost,
-      transportCost,
-      govtScheme,
-      coldStorage,
-      mandiOpen,
-    };
-  
-    try {
-      const response = await fetch("http://localhost:5000/predict", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-  
-      const result = await response.json();
-      console.log("Server response:", result);
-  
-      setPredictedPrice(result.predicted_price);
-      setPrevPrice(result.prev_price);
-      setAccuracy(result.accuracy);
-      setTimeElapsed(result.time_elapsed);
-  
-    } catch (error) {
-      console.error("Prediction failed:", error);
-    }
+  const {
+    crop_name,
+    region,
+    year,
+    month,
+    rainfall,
+    crop_variety,
+    area_sown,
+    yield: yield_kg,
+    irrigated_percent,
+    fertilizer_used,
+    msP,
+    market_demand,
+    export_demand,
+    input_cost,
+    transport_cost,
+    govt_scheme_active,
+    cold_storage_available,
+    mandi_open,
+  } = formData;
+
+  // Compose cleaned-up data with proper types
+  const data = {
+    crop_name: crop_name,
+    region: region,
+    year: Number(year),
+    month: Number(month),
+    rainfall: parseFloat(rainfall),
+    crop_variety,
+    area_sown: parseFloat(area_sown),
+    yield: parseFloat(yield_kg),
+    irrigated_percent: parseFloat(irrigated_percent),
+    fertilizer_used: parseFloat(fertilizer_used),
+    msP: parseFloat(msP),
+    market_demand: parseFloat(market_demand),
+    export_demand: parseFloat(export_demand),
+    input_cost: parseFloat(input_cost),
+    transport_cost: parseFloat(transport_cost),
+    govt_scheme_active: govt_scheme_active.toLowerCase(),
+    cold_storage_available: cold_storage_available.toLowerCase(),
+    mandi_open: mandi_open.toLowerCase(),
   };
-  
 
+  const endpoint = "http://localhost:5000/api/model/xgboost/predict/";
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
-  //   try {
-  //     const response = await fetch(
-  //       "http://192.168.31.64:7500/api/model/predict",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(formData),
-  //       }
-  //     );
+    const result = await response.json();
+    console.log("Server response:", result);
 
-  //     const result = await response.json();
-  //     console.log("Server Response:", result);
-  //   } catch (error) {
-  //     console.error("Prediction API Error:", error);
-  //   }
-  // };
+    setPredictedPrice(result.predicted_price);
+    setAccuracy(result.model_r2_score);
+    setTimeElapsed(result.elapsed_time_sec);
+  } catch (error) {
+    console.error("Prediction failed:", error);
+  }
+};
+
 
   return (
     <div className="container">
@@ -122,11 +119,38 @@ function Dashboard() {
             <div className="input-card">
               <h2>Crop Prediction</h2>
               <form className="input-form" onSubmit={handleSubmit}>
+                <div className="form-group model-selector">
+                  <label className="form-label">Select Model</label>
+                  <div className="radio-options">
+                    <label className="radio-option">
+                      <input
+                        type="radio"
+                        name="modelChoice"
+                        value="xgboost"
+                        checked={formData.modelChoice === "xgboost"}
+                        onChange={handleChange}
+                      />
+                      XGBoost
+                    </label>
+
+                    <label className="radio-option">
+                      <input
+                        type="radio"
+                        name="modelChoice"
+                        value="randomforest"
+                        checked={formData.modelChoice === "randomforest"}
+                        onChange={handleChange}
+                      />
+                      Random Forest
+                    </label>
+                  </div>
+                </div>
+
                 <label>
                   Crop Name
                   <select
-                    name="cropName"
-                    value={formData.cropName}
+                    name="crop_name"
+                    value={formData.crop_name}
                     onChange={handleChange}
                     required
                   >
@@ -134,6 +158,7 @@ function Dashboard() {
                     <option>Wheat</option>
                     <option>Rice</option>
                     <option>Corn</option>
+                    {/* Add more if needed */}
                   </select>
                 </label>
 
@@ -160,7 +185,6 @@ function Dashboard() {
                     name="year"
                     value={formData.year}
                     onChange={handleChange}
-                    placeholder="e.g. 2025"
                     required
                   />
                 </label>
@@ -174,23 +198,23 @@ function Dashboard() {
                     required
                   >
                     <option value="">Select month</option>
-                    <option>January</option>
-                    <option>February</option>
-                    <option>March</option>
-                    <option>...</option>
+                    {[
+                      "January",
+                      "February",
+                      "March",
+                      "April",
+                      "May",
+                      "June",
+                      "July",
+                      "August",
+                      "September",
+                      "October",
+                      "November",
+                      "December",
+                    ].map((month) => (
+                      <option key={month}>{month}</option>
+                    ))}
                   </select>
-                </label>
-
-                <label>
-                  Market Price (₹/kg)
-                  <input
-                    type="number"
-                    name="marketPrice"
-                    value={formData.marketPrice}
-                    onChange={handleChange}
-                    placeholder="Enter market price"
-                    required
-                  />
                 </label>
 
                 <label>
@@ -200,7 +224,6 @@ function Dashboard() {
                     name="rainfall"
                     value={formData.rainfall}
                     onChange={handleChange}
-                    placeholder="e.g. 120"
                     required
                   />
                 </label>
@@ -212,7 +235,6 @@ function Dashboard() {
                     name="variety"
                     value={formData.variety}
                     onChange={handleChange}
-                    placeholder="Enter variety"
                     required
                   />
                 </label>
@@ -221,10 +243,9 @@ function Dashboard() {
                   Area Sown (hectare)
                   <input
                     type="number"
-                    name="areaSown"
-                    value={formData.areaSown}
+                    name="area_sown"
+                    value={formData.area_sown}
                     onChange={handleChange}
-                    placeholder="Optional"
                   />
                 </label>
 
@@ -232,21 +253,19 @@ function Dashboard() {
                   Yield (kg/hectare)
                   <input
                     type="number"
-                    name="yield"
-                    value={formData.yield}
+                    name="yield_kg_per_hectare"
+                    value={formData.yield_kg_per_hectare}
                     onChange={handleChange}
-                    placeholder="Optional"
                   />
                 </label>
 
                 <label>
-                  Irrigated %
+                  Irrigated Area (%)
                   <input
                     type="number"
-                    name="irrigated"
-                    value={formData.irrigated}
+                    name="irrigated_percent"
+                    value={formData.irrigated_percent}
                     onChange={handleChange}
-                    placeholder="Optional"
                   />
                 </label>
 
@@ -254,31 +273,30 @@ function Dashboard() {
                   Fertilizer Used (kg)
                   <input
                     type="number"
-                    name="fertilizer"
-                    value={formData.fertilizer}
+                    name="fertilizer_used"
+                    value={formData.fertilizer_used}
                     onChange={handleChange}
-                    placeholder="Optional"
                   />
                 </label>
 
                 <label>
                   MSP Available?
                   <select
-                    name="msp"
-                    value={formData.msp}
+                    name="msp_available"
+                    value={formData.msp_available}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
-                    <option>Yes</option>
-                    <option>No</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                   </select>
                 </label>
 
                 <label>
                   Market Demand
                   <select
-                    name="marketDemand"
-                    value={formData.marketDemand}
+                    name="market_demand"
+                    value={formData.market_demand}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
@@ -291,8 +309,8 @@ function Dashboard() {
                 <label>
                   Export Demand
                   <select
-                    name="exportDemand"
-                    value={formData.exportDemand}
+                    name="export_demand"
+                    value={formData.export_demand}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
@@ -306,10 +324,9 @@ function Dashboard() {
                   Input Cost (₹)
                   <input
                     type="number"
-                    name="inputCost"
-                    value={formData.inputCost}
+                    name="input_cost"
+                    value={formData.input_cost}
                     onChange={handleChange}
-                    placeholder="Optional"
                   />
                 </label>
 
@@ -317,51 +334,61 @@ function Dashboard() {
                   Transport Cost (₹)
                   <input
                     type="number"
-                    name="transportCost"
-                    value={formData.transportCost}
+                    name="transport_cost"
+                    value={formData.transport_cost}
                     onChange={handleChange}
-                    placeholder="Optional"
                   />
                 </label>
 
                 <label>
                   Govt Scheme Active?
                   <select
-                    name="govtScheme"
-                    value={formData.govtScheme}
+                    name="govt_scheme"
+                    value={formData.govt_scheme}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
-                    <option>Yes</option>
-                    <option>No</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                   </select>
                 </label>
 
                 <label>
                   Cold Storage Available?
                   <select
-                    name="coldStorage"
-                    value={formData.coldStorage}
+                    name="cold_storage"
+                    value={formData.cold_storage}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
-                    <option>Yes</option>
-                    <option>No</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                   </select>
                 </label>
 
                 <label>
                   Mandi Open?
                   <select
-                    name="mandiOpen"
-                    value={formData.mandiOpen}
+                    name="mandi_open"
+                    value={formData.mandi_open}
                     onChange={handleChange}
                   >
                     <option value="">Select</option>
-                    <option>Yes</option>
-                    <option>No</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                   </select>
                 </label>
+
+                {/* <label>
+                  Market Price (₹/kg)
+                  <input
+                    type="number"
+                    name="market_price"
+                    value={formData.market_price}
+                    onChange={handleChange}
+                    required
+                  />
+                </label> */}
 
                 <button type="submit">Predict</button>
               </form>
@@ -371,8 +398,6 @@ function Dashboard() {
             <div className="result-section">
               <div className="result-card">
                 <h3>Price Comparison Graph</h3>
-                <div className="graph">[Your Graph Here]</div>
-
                 <GraphBox />
               </div>
 
