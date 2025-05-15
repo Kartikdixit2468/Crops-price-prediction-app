@@ -25,8 +25,6 @@ cd crop-price-predictor
 | ML Model   | scikit-learn, pandas, numpy|
 | Styling    | TailwindCSS / CSS          |
 | Others     | Axios, Chart.js, etc       |
-|-----------------------------------------|
----
 
 ## ✨ Features
 
@@ -41,6 +39,7 @@ cd crop-price-predictor
 
 ## 📁 Project Structure
 
+```bash
 crop-price-app/
 ├── backend/ # Flask server, model, preprocessing
 │ ├── model/ # Trained model (model.pkl)
@@ -56,7 +55,7 @@ crop-price-app/
 ├── .gitignore
 └── README.md
 
-
+```
 ---
 
 ## 🚀 Getting Started
